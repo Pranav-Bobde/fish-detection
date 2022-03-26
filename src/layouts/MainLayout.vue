@@ -18,7 +18,7 @@ export default {
   computed: {
     bgImage() {
       return {
-        backgroundImage: `url(${require('../assets/fishes.jpg')})`
+        backgroundImage: `url(${require('../assets/fish1.jpg')})`
       };
     },
   },

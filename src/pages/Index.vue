@@ -31,7 +31,8 @@
         v-else
         v-model="imageUpload"
         @input="captureImageFallback"
-        label="Choose an image"
+        label="CHOOSE AN IMAGE"
+        label-color="black"
         accept="image/*"
         outlined
       >
@@ -42,10 +43,11 @@
       </div>
       <div class="row justify-center q-mt-lg">
         <q-btn
+          class="text-h5"
           @click="addPost()"
           :disable="!post.caption || !post.photo"
-          color="primary"
-          label="Post Image"
+          color="blue"
+          label="Upload Image"
           rounded
           unelevated
         />
