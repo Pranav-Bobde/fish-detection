@@ -18,7 +18,8 @@ export default {
   computed: {
     bgImage() {
       return {
-        backgroundImage: `url(${require('../assets/fish1.jpg')})`
+        // backgroundImage: `url(${require('../assets/fishes.jpg')})`,
+        backgroundColor: "#F4BBBB"
       };
     },
   },

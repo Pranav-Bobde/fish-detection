@@ -1,55 +1,60 @@
 <template>
   <q-page class="constrain-more q-pa-md">
-    <div class="text-center text-h1">
-      FISH DETECTION
+    <div class="text-center">
+      <h1>
+        FISH DETECTION
+      </h1> 
     </div>
-    <div class="camera-frame q-pa-md">
-      <video 
-        v-show="!imageCaptured"
-        ref="video"
-        class="full-width"
-        autoplay
-      />
-      <canvas
-        v-show="imageCaptured"
-        ref="canvas"
-        class="full-width"
-        height="240"
-      />
-    </div>
-    <div class="text-center q-pa-md">
-      <q-btn
-        v-if="hasCameraSupport"
-        @click="captureImage"
-        :disable="imageCaptured"
-        color="grey-10"
-        icon="eva-camera"
-        size="lg"
-        round
-      />
-      <q-file
-        v-else
-        v-model="imageUpload"
-        @input="captureImageFallback"
-        label="CHOOSE AN IMAGE"
-        label-color="black"
-        accept="image/*"
-        outlined
-      >
-        <template v-slot:prepend>
-          <q-icon name="attach_file" />
-        </template>
-      </q-file>
+    <div style="width: 50%; margin: auto;">
+      <div class="camera-frame q-pa-md">
+        <video 
+          v-show="!imageCaptured"
+          ref="video"
+          class="full-width"
+          autoplay
+        />
+        <canvas
+          v-show="imageCaptured"
+          ref="canvas"
+          class="full-width"
+          height="240"
+        />
       </div>
+    </div>
+    <div style="width: 50%; margin: auto;">
+      <div class="text-center q-pa-md">
+        <q-btn
+          v-if="hasCameraSupport"
+          @click="captureImage"
+          :disable="imageCaptured"
+          color="grey-10"
+          icon="eva-camera"
+          size="lg"
+          round
+        />
+        <q-file
+          v-else
+          v-model="imageUpload"
+          @input="captureImageFallback"
+          label="CHOOSE AN IMAGE"
+          label-color="black"
+          accept="image/*"
+          outlined
+        >
+          <template v-slot:prepend>
+            <q-icon name="attach_file" />
+          </template>
+        </q-file>
+      </div>
+    </div>
       <div class="row justify-center q-mt-lg">
         <q-btn
-          class="text-h5"
+          class="text-h6"
           @click="addPost()"
-          :disable="!post.caption || !post.photo"
-          color="blue"
+          :disable="!post.photo"
+          color="primary"
           label="Upload Image"
           rounded
-          unelevated
         />
       </div>
   </q-page>
@@ -64,10 +69,7 @@ export default {
   data() {
     return {
       post: {
-        id: uid(),
-        caption: '',
-        photo: null,
-        date: Date.now()
+        photo: null
       },
       imageCaptured: false,
       imageUpload: [],
@@ -81,6 +83,19 @@ export default {
     }
   },
   methods: {
+    displayRes(data){
+      console.log('here')
+      this.$q.dialog({
+        title: 'PREDICTION',
+        message: `${data.fish_species} -> ${data.prediction}`,
+        ok: {
+          push: true
+        },
+        persistent: true
+      }).onOk(() => {
+        // console.log('>>>> OK')
+      })
+    },
     initCamera() {
       navigator.mediaDevices.getUserMedia({
         video: true
@@ -119,6 +134,7 @@ export default {
         img.src = event.target.result
       }
       reader.readAsDataURL(file)
+
     },
     disableCamera() {
       this.$refs.video.srcObject.getVideoTracks().forEach(track => {
@@ -150,32 +166,19 @@ export default {
 
     },
     addPost() {
-      this.$q.loading.show();
-
       let formData = new FormData();
-      formData.append("id", this.post.id);
-      formData.append("caption", this.post.caption);
-      formData.append("date", this.post.date);
-      formData.append("file", this.post.photo, this.post.id + ".png");
-
+      formData.append("file", this.post.photo, "pic.jpeg");
       this.$axios
-        .post(`${process.env.API}/createPost`, formData)
+        .post("http://127.0.0.1:5000/predict", formData)
         .then(response => {
           console.log("response: ", response);
-          this.$router.push("/");
-          this.$q.notify({
-            message: "Post created!",
-            actions: [{ label: "Dismiss", color: "white" }]
-          });
-          this.$q.loading.hide();
+          let data = response.data
+          
+          this.displayRes(data)
+          
         })
         .catch(err => {
-          console.log("err: ", err);
-          this.$q.dialog({
-            title: "Error",
-            message: "Sorry, could not create post!"
-          });
-          this.$q.loading.hide();
+          console.log(err);
         });
     }
   },
